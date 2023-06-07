@@ -6,6 +6,11 @@ const AboutPage: React.FC = () => {
     <Container
       sx={{
         marginLeft: 30,
+        padding: 1,
+        '@media (max-width:766px)': {
+          marginLeft: 0,
+          padding: 2,
+        },
       }}
     >
       <h2>About</h2>
