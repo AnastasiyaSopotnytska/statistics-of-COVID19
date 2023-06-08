@@ -8,11 +8,11 @@ import GlobalStatsPage from './pages/GlobalStatsPage';
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Sidebar />
-      <Routes>
-        <Route path="/" element={<AboutPage />} />
-        <Route path="/stats" element={<GlobalStatsPage />} />
-      </Routes>
+        <Sidebar />
+        <Routes>
+          <Route path="/" element={<AboutPage />} />
+          <Route path="/stats" element={<GlobalStatsPage />} />
+        </Routes>
     </BrowserRouter>
   );
 };
