@@ -14,3 +14,17 @@ export const getGlobalStatistics = (date?: string, country?: string,) => {
       console.error('Error fetching statistics:', error);
     });
 };
+
+export const getCountryList = () => {
+  return fetch(`${URL}/regions`)
+    .then(response => {
+      console.log(response, 'response')
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.clone().json();
+    })
+    .catch(error => {
+      console.error('Error fetching regions:', error);
+    });
+}

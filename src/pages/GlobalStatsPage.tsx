@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, TextField, Button, Container } from '@mui/material';
-import { getGlobalStatistics } from '../api/api';
+import { getCountryList, getGlobalStatistics } from '../api/api';
 import { GlobalStatisticsType } from '../types/types';
 import Chart from '../components/Chart';
 
 
 const GlobalStats: React.FC = () => {
   const [globalData, setGlobalData] = useState<GlobalStatisticsType>();
+  const [regions, setRegions] = useState<string[]>();
   const [data, setData] = useState<GlobalStatisticsType[]>([]);
   const [filters, setFilters] = useState({
     dateFrom: '',
@@ -16,6 +17,7 @@ const GlobalStats: React.FC = () => {
   const [errors, setErrors] = useState({
     dateFrom: false,
     dateTo: false,
+    country: false,
   });
 
   useEffect(() => {
@@ -25,15 +27,15 @@ const GlobalStats: React.FC = () => {
       dateTo: urlParams.get('dateTo') || localStorage.getItem('dateTo') || '2023-03-09',
       country: urlParams.get('country') || localStorage.getItem('country') || '',
     };
-    
+
     const newFilters = {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       country: params.country,
     };
-  
+
     setFilters(newFilters);
-    
+
     localStorage.setItem('dateFrom', params.dateFrom);
     localStorage.setItem('dateTo', params.dateTo);
     localStorage.setItem('country', params.country);
@@ -53,6 +55,15 @@ const GlobalStats: React.FC = () => {
       .catch((error) => {
         console.error('Error fetching global statistics:', error);
       });
+
+    getCountryList()
+    .then((data) => {
+      const list = data.data.map((item: { name: string; iso: string }) => [item.name, item.iso]);
+      setRegions(list);
+    })
+      .catch((error) => {
+        console.error('Error fetching global statistics:', error);
+      });
   }, []);
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,21 +76,29 @@ const GlobalStats: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    if (regions?.length !== 0 && filters.country?.length !== 0) {
+      regions?.some(country => country.toLowerCase() === filters.country.toLowerCase())
+      ? setErrors({ ...errors, country: false })
+      : setErrors({ ...errors, country: true })
+    }
+
     try {
       const responseFromDate = await getGlobalStatistics(filters.dateFrom, filters.country);
       const responseToDate = await getGlobalStatistics(filters.dateTo, filters.country);
 
-      if (responseFromDate.length === 0) {
+      if (responseFromDate.data.length === 0) {
         setErrors({ ...errors, dateFrom: true });
         return;
       }
 
-      if (responseToDate.length === 0) {
+      if (responseToDate.data.length === 0) {
         setErrors({ ...errors, dateTo: true });
         return;
       }
 
       setData([responseFromDate.data, responseToDate.data]);
+      setErrors({ ...errors, dateTo: false });
+      setErrors({ ...errors, dateFrom: false })
     } catch (error) {
       console.error('Error fetching global statistics:', error);
     }
@@ -92,8 +111,7 @@ const GlobalStats: React.FC = () => {
         <>
           <Box sx={{ mb: 4 }}>
             <div className='GlobalStatisctic'>
-              <div>Confirmed: {globalData.confirmed}</div>
-              <div>Deaths: {globalData.deaths}</div>
+              <div>Last update: {globalData.last_update}</div>
               <div>Fatality rate: {globalData.fatality_rate}</div>
             </div>
           </Box>
@@ -132,18 +150,15 @@ const GlobalStats: React.FC = () => {
       </Box>
       {errors.dateFrom && (
         <div className='error'>
-          NO DATA FOR {filters.dateFrom}
+          NO DATA FOR dateFrom
         </div>
       )}
       {errors.dateTo && (
         <div className='error'>
-          NO DATA FOR {filters.dateTo}
+          NO DATA FOR dateTo
         </div>
       )}
-      <div>
-
-      </div>
-      {data.length !== 0 && (
+      {(data.length !== 0 && !errors.dateFrom && !errors.dateTo) && (
         <div style={{ width: '80%', maxWidth: '80%' }}>
           <Chart data={data} />
         </div>
