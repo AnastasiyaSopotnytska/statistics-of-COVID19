@@ -17,7 +17,6 @@ const GlobalStats: React.FC = () => {
   const [errors, setErrors] = useState({
     dateFrom: false,
     dateTo: false,
-    country: false,
   });
 
   useEffect(() => {
@@ -76,13 +75,6 @@ const GlobalStats: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (regions?.length !== 0 && filters.country?.length !== 0) {
-      regions?.some(country => country.toLowerCase === filters.country.toLowerCase)
-      ? setErrors({ ...errors, country: false })
-      : setErrors({ ...errors, country: true }) 
-        return
-    }
-
     try {
       const responseFromDate = await getGlobalStatistics(filters.dateFrom, filters.country);
       const responseToDate = await getGlobalStatistics(filters.dateTo, filters.country);
@@ -99,7 +91,7 @@ const GlobalStats: React.FC = () => {
 
       setData([responseFromDate.data, responseToDate.data]);
       setErrors({ ...errors, dateTo: false });
-      setErrors({ ...errors, dateFrom: false })
+      setErrors({ ...errors, dateFrom: false });
     } catch (error) {
       console.error('Error fetching global statistics:', error);
     }
@@ -151,20 +143,15 @@ const GlobalStats: React.FC = () => {
       </Box>
       {errors.dateFrom && (
         <div className='error'>
-          NO DATA FOR dateFrom
+          NO DATA FOR dateFrom, please check data and city
         </div>
       )}
       {errors.dateTo && (
         <div className='error'>
-          NO DATA FOR dateTo
+          NO DATA FOR dateTo, please check data and city
         </div>
       )}
-      {errors.country && (
-        <div className='error'>
-          NO DATA FOR country
-        </div>
-      )}
-      {(data.length !== 0 && !errors.dateFrom && !errors.dateTo && !errors.country) && (
+      {(data.length !== 0 && !errors.dateFrom && !errors.dateTo) && (
         <div style={{ width: '80%', maxWidth: '80%' }}>
           <Chart data={data} />
         </div>
