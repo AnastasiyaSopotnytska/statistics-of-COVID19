@@ -77,9 +77,10 @@ const GlobalStats: React.FC = () => {
     event.preventDefault();
 
     if (regions?.length !== 0 && filters.country?.length !== 0) {
-      regions?.some(country => country.toLowerCase() === filters.country.toLowerCase())
+      regions?.some(country => country.toLowerCase === filters.country.toLowerCase)
       ? setErrors({ ...errors, country: false })
-      : setErrors({ ...errors, country: true })
+      : setErrors({ ...errors, country: true }) 
+        return
     }
 
     try {
@@ -158,7 +159,12 @@ const GlobalStats: React.FC = () => {
           NO DATA FOR dateTo
         </div>
       )}
-      {(data.length !== 0 && !errors.dateFrom && !errors.dateTo) && (
+      {errors.country && (
+        <div className='error'>
+          NO DATA FOR country
+        </div>
+      )}
+      {(data.length !== 0 && !errors.dateFrom && !errors.dateTo && !errors.country) && (
         <div style={{ width: '80%', maxWidth: '80%' }}>
           <Chart data={data} />
         </div>
